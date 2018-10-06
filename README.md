@@ -3,7 +3,7 @@ Short-time Fourier transform for IDL
 
 Syntax:  
 Result = stft(array [,timeline] [,window lengh] [,window overlap]  
-                [,sampling] [,window_function = scalar] [,timeline = variable]  
+　　　　　　　　[,sampling] [,window_function = scalar] [,timeline = variable]  
                     [,frequency = variable])  
 
 Return Value:  
