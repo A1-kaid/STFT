@@ -43,7 +43,8 @@
 ;============================================================================
 
 function stft, signal, time0, win, overlap, sampling, $
-  window_function = w_number,  timeline = time1, frequency = freq
+  window_function = w_number,  timeline = time1, frequency = freq, $
+  cross = cross
 
   ON_ERROR, 2
 
@@ -51,24 +52,31 @@ function stft, signal, time0, win, overlap, sampling, $
   if ~keyword_set(overlap) then overlap = 250
 
   n = floor((n_elements(signal) - overlap) / (win - overlap))
-  spectral = fltarr(n, win)
   window_f = findgen(win) + 1
+  signal   = temporary( signal[ 0: (win-long(overlap))*n+overlap-1])
+  spectral = fltarr(n, win, /nozero)
+  if keyword_set(cross) then spectral2 = fltarr(n, win, /nozero)
 
   if keyword_set(w_number) then begin
     case w_number of
-      ;rectangular
-      1:window_f = replicate(1, win)
+      ;hanning
+      1:window_f = hanning(win)
       ;hamming
       2:window_f = 0.53836- 0.46164*cos(2*!pi*temporary(window_f) / (win-1))
       ;nuttall
       3:window_f = 0.355768- 0.487396*cos(2*!pi*window_f / (win-1)) $
         + 0.144232*cos(4*!pi*window_f / (win-1))- 0.012604*cos(6*!pi*window_f / (win-1))
     endcase
-  endif else window_f = hanning(win);hanning
+  endif else window_f = replicate(1, win);rectangular
 
   for i = 1, n, 1 do spectral[i-1, *] = abs( $
-    fft(signal[(win-long(overlap))*(i-1): (win-long(overlap))*i+overlap-1]*window_f) )^2
-  spectral = temporary(spectral[*, 0:win/2])
+    fft( signal[ (win-long(overlap))*(i-1): (win-long(overlap))*i+overlap-1]*window_f) )^2
+  if keyword_set(cross) then begin
+    signal = reverse( temporary( signal))
+    for i = 1, n, 1 do spectral2[n-i, *] = abs( $
+      fft( signal[ (win-long(overlap))*(i-1): (win-long(overlap))*i+overlap-1]*window_f) )^2
+    spectral = ( temporary( spectral[*, 0:win/2]) + spectral2[*, 0:win/2]) / 2
+  endif else spectral = temporary( spectral[*, 0:win/2])
 
   if keyword_set(time0) then begin
     if n_elements(signal) eq n_elements(time0) then begin
