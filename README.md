@@ -1,10 +1,10 @@
 # STFT
 Short-time Fourier transform for IDL
 
-Syntax:
-Result = stft(array [,timeline] [,window lengh] [,window overlap]
-                [,sampling] [,window_function = scalar] [,timeline = variable]
-                    [,frequency = variable])
+Syntax:  
+Result = stft(array [,timeline] [,window lengh] [,window overlap]  
+                [,sampling] [,window_function = scalar] [,timeline = variable]  
+                    [,frequency = variable])  
 
 Return Value:
   STFT return a two-dimensional vector which is Short-time Fourier
