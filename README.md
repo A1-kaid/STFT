@@ -36,6 +36,10 @@ Timeline:
 　Return timeline of the spectrogram, in julday.  
 Frequency:  
 　Return frequency of the spectrogram. 
-Cross:
-　Set this keyword to do STFT both fellow and reverse the timeline
-of original data, the result will be the average of the two.
+Cross:  
+　Set this keyword to do STFT both fellow and reverse the timeline  
+of original data, the result will be the average of the two.  
+Inverse:  
+　Set this keyword to do inverse STFT, meanwhile, other keywords and  
+arguments except Window overlap are no effect, and default value of  
+overlap will be 0.
