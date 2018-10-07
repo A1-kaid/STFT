@@ -1,6 +1,6 @@
 ;============================================================================
 ;=                                                                          =
-;=                   Short-time Fourier transform v1.0.0                    =
+;=                      Short-time Fourier transform                        =
 ;=                                                                          =
 ;============================================================================
 ;Short-time Fourier transform Function
