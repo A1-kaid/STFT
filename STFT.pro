@@ -12,7 +12,7 @@
 ;
 ;Return Value:
 ;  STFT return a two-dimensional vector which is Short-time Fourier
-;transform result of input array.
+;transform result of input array or return a inverse STFT of input array.
 ;
 ;Arguments:
 ;Array:
