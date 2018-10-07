@@ -4,7 +4,7 @@ Short-time Fourier transform for IDL
 Syntax:  
 Result = stft(array [,timeline] [,window lengh] [,window overlap]  
 　　　　　　　　[,sampling] [,window_function = scalar] [,timeline = variable]  
-　　　　　　　　　　　[,frequency = variable])  
+　　　　　　　　　　　[,frequency = variable] [,/cross])  
 
 Return Value:  
 　STFT return a two-dimensional vector which is Short-time Fourier  
@@ -35,4 +35,7 @@ Window_function:
 Timeline:  
 　Return timeline of the spectrogram, in julday.  
 Frequency:  
-　Return frequency of the spectrogram.  
+　Return frequency of the spectrogram. 
+Cross:
+　Set this keyword to do STFT both fellow and reverse the timeline
+of original data, the result will be the average of the two.
