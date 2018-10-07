@@ -6,9 +6,9 @@
 ;Short-time Fourier transform Function
 ;
 ;Syntax:
-;Result = stft(array [,timeline] [,window lengh] [,window overlap]
+;Result = stft(array [,window overlap] [,window lengh] [,timeline]
 ;                [,sampling] [,window_function = scalar] [,timeline = variable]
-;                    [,frequency = variable] [,/cross])
+;                    [,frequency = variable] [,/cross] [,/inverse])
 ;
 ;Return Value:
 ;  STFT return a two-dimensional vector which is Short-time Fourier
@@ -43,56 +43,83 @@
 ;Cross:
 ;  Set this keyword to do STFT both fellow and reverse the timeline
 ;of original data, the result will be the average of the two.
+;Inverse:
+;  Set this keyword to do inverse STFT, meanwhile, other keywords and
+;arguments except Window overlap are no effect, and default value of
+;overlap will be 0.
 ;============================================================================
 
-function stft, signal, time0, win, overlap, sampling, $
+function stft, signal0, overlap, win, time0, sampling, $
   window_function = w_number,  timeline = time1, frequency = freq, $
-  cross = cross
+  cross = cross, inverse = inverse
 
-  ON_ERROR, 2
+  on_error, 2
+  
+  if ~keyword_set(inverse) then begin
+    
+    if ~keyword_set(win) then win = 500
+    if ~keyword_set(overlap) then overlap = 250
+    
+    n = floor((n_elements(signal0) - overlap) / (win - overlap))
+    window_f = findgen(win) + 1
+    signal   = signal0[ 0: (win-long(overlap))*n+overlap-1]
+    spectral = fltarr(n, win, /nozero)
+    if keyword_set(cross) then spectral2 = fltarr(n, win, /nozero)
 
-  if ~keyword_set(win) then win = 500
-  if ~keyword_set(overlap) then overlap = 250
 
-  n = floor((n_elements(signal) - overlap) / (win - overlap))
-  window_f = findgen(win) + 1
-  signal   = temporary( signal[ 0: (win-long(overlap))*n+overlap-1])
-  spectral = fltarr(n, win, /nozero)
-  if keyword_set(cross) then spectral2 = fltarr(n, win, /nozero)
+    if keyword_set(w_number) then begin
+      case w_number of
+        ;hanning
+        1:window_f = hanning(win)
+        ;hamming
+        2:window_f = 0.53836- 0.46164*cos(2*!pi*temporary(window_f) / (win-1))
+        ;nuttall
+        3:window_f = 0.355768- 0.487396*cos(2*!pi*window_f / (win-1)) $
+          + 0.144232*cos(4*!pi*window_f / (win-1))- 0.012604*cos(6*!pi*window_f / (win-1))
+      endcase
+    endif else window_f = replicate(1, win);rectangular
 
-  if keyword_set(w_number) then begin
-    case w_number of
-      ;hanning
-      1:window_f = hanning(win)
-      ;hamming
-      2:window_f = 0.53836- 0.46164*cos(2*!pi*temporary(window_f) / (win-1))
-      ;nuttall
-      3:window_f = 0.355768- 0.487396*cos(2*!pi*window_f / (win-1)) $
-        + 0.144232*cos(4*!pi*window_f / (win-1))- 0.012604*cos(6*!pi*window_f / (win-1))
-    endcase
-  endif else window_f = replicate(1, win);rectangular
 
-  for i = 1, n, 1 do spectral[i-1, *] = abs( $
-    fft( signal[ (win-long(overlap))*(i-1): (win-long(overlap))*i+overlap-1]*window_f) )^2
-  if keyword_set(cross) then begin
-    signal = reverse( temporary( signal))
-    for i = 1, n, 1 do spectral2[n-i, *] = abs( $
-      fft( signal[ (win-long(overlap))*(i-1): (win-long(overlap))*i+overlap-1]*window_f) )^2
-    spectral = ( temporary( spectral[*, 0:win/2]) + spectral2[*, 0:win/2]) / 2
-  endif else spectral = temporary( spectral[*, 0:win/2])
+    for i = 1, n, 1 do spectral[i-1, *] = $
+      fft( signal[ (win-long(overlap))*(i-1): (win-long(overlap))*i+overlap-1]*window_f)
 
-  if keyword_set(time0) then begin
-    if n_elements(signal) eq n_elements(time0) then begin
-      time1 = interpol(time0, ulindgen(n_elements(time0)), ulindgen(n)*(win-2*overlap)+win/2)
-    endif else print, 'STFT error: Length of timeline data must be equal to the input signal.'
-  endif
+    if keyword_set(cross) then begin
+      signal = reverse( temporary( signal))
+      for i = 1, n, 1 do spectral2[n-i, *] = $
+        fft( signal[ (win-long(overlap))*(i-1): (win-long(overlap))*i+overlap-1]*window_f)
+      spectral = ( temporary( spectral) + spectral2) / 2
+    endif
 
-  if ~keyword_set(sampling) then begin
-    caldat, (time0[-1]-time0[0])/(n_elements(time0)-1), 0, 0, 0, h, m, s
-    sampling = (h-12)*3600 + m*60 + s
-  endif
-  freq = findgen(win/2+1)/(win*sampling)
 
-  return, spectral
+    if keyword_set(time0) then begin
 
+      if n_elements(signal) eq n_elements(time0) then begin
+        time1 = interpol(time0, ulindgen(n_elements(time0)), ulindgen(n)*(win-2*overlap)+win/2)
+      endif else print, 'STFT error: Length of timeline data must be equal to the input signal.'
+
+      if ~keyword_set(sampling) then begin
+        caldat, (time0[-1]-time0[0])/(n_elements(time0)-1), 0, 0, 0, h, m, s
+        sampling = (h-12)*3600 + m*60 + s
+      endif
+
+      freq = findgen(win/2+1)/(win*sampling)
+
+    endif
+    
+    return, spectral
+    
+  endif else begin
+    
+    if ~keyword_set(overlap) then overlap = 0
+    
+    s_size = size( signal0, /dimensions)
+    time_domain = fltarr( n_elements(signal0)/2 + overlap)
+    
+    for i = 0, s_size[0]-1, 1 do $
+      time_domain[ i*s_size[1]/2: i*s_size[1]/2+s_size[1]-1] = fft(signal0[i,*], /inverse)
+    
+    return, time_domain
+    
+  endelse
+  
 end
