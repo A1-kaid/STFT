@@ -67,8 +67,8 @@ function stft, signal0, overlap, win, time0, sampling, $
     n = floor((n_elements(signal0) - overlap) / (win - overlap))
     window_f = findgen(win) + 1
     signal   = signal0[ 0: (win-long(overlap))*n+overlap-1]
-    spectral = fltarr(n, win, /nozero)
-    if keyword_set(cross) then spectral2 = fltarr(n, win, /nozero)
+    spectral = complexarr(n, win, /nozero)
+    if keyword_set(cross) then spectral2 = complexarr(n, win, /nozero)
 
 
     if keyword_set(w_number) then begin
@@ -99,8 +99,9 @@ function stft, signal0, overlap, win, time0, sampling, $
 
     if keyword_set(time0) then begin
 
-      if n_elements(signal) eq n_elements(time0) then begin
-        time1 = interpol(time0, ulindgen(n_elements(time0)), ulindgen(n)*(win-2*overlap)+win/2)
+      if n_elements(signal0) eq n_elements(time0) then begin
+        time  = time0[ 0: (win-long(overlap))*n+overlap-1]
+        time1 = interpol(time, ulindgen(n_elements(time)), ulindgen(n)*(win-2*overlap)+win/2)
       endif else print, 'STFT error: Length of timeline data must be equal to the input signal.'
 
       if ~keyword_set(sampling) then begin
@@ -108,7 +109,7 @@ function stft, signal0, overlap, win, time0, sampling, $
         sampling = (h-12)*3600 + m*60 + s
       endif
 
-      freq = findgen(win/2+1)/(win*sampling)
+      freq = findgen(win/2)/(win*sampling)
 
     endif
     
