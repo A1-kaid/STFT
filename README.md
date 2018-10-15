@@ -4,7 +4,7 @@ Short-time Fourier transform for IDL
 Syntax:  
 Result = stft(array [,window overlap] [,window lengh] [,timeline]  
 　　　　　　　　[,sampling] [,window_function = scalar] [,timeline = variable]  
-　　　　　　　　　　　[,frequency = variable] [,/cross] [,/inverse])  
+　　　　　　　　　　　[,frequency = variable] [,/cross] [,/inverse] [,/center])  
 
 Return Value:  
 　STFT return a two-dimensional vector which is Short-time Fourier  
@@ -42,4 +42,7 @@ of original data, the result will be the average of the two.
 Inverse:  
 　Set this keyword to do inverse STFT, meanwhile, other keywords and  
 arguments except Window overlap are no effect, and default value of  
-overlap will be 0.
+overlap will be 0.  
+Center:  
+　Set this keyword to center original signal befor FFT, can be  
+regarded as a special high-pass filter.
