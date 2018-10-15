@@ -100,8 +100,7 @@ function stft, signal0, overlap, win, time0, sampling, $
     if keyword_set(time0) then begin
 
       if n_elements(signal0) eq n_elements(time0) then begin
-        time  = time0[ 0: (win-long(overlap))*n+overlap-1]
-        time1 = interpol(time, ulindgen(n_elements(time)), ulindgen(n)*(win-2*overlap)+win/2)
+        time1 = interpol(time0[ 0: (win-long(overlap))*n+overlap-1], n)
       endif else print, 'STFT error: Length of timeline data must be equal to the input signal.'
 
       if ~keyword_set(sampling) then begin
