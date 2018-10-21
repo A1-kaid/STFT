@@ -22,10 +22,10 @@
 ;  If not spectified or 0, the converted timeline will not be output.
 ;Window length:
 ;  The length of window function, or the sampling length of STFT.
-;  If not spectified, it will be preset to 500.
+;  If not spectified, it will be preset to 512.
 ;Window overlap:
 ;  The length of overlap part between two window function.
-;  If not spectified, it will be preset to 250.
+;  If not spectified, it will be preset to 256.
 ;Sampling:
 ;  Sampling of input signal, in seconds.
 ;  If not spectified, it will be automatically determination.
@@ -60,8 +60,8 @@ function stft, signal0, overlap, win, time0, sampling, $
   
   if ~keyword_set(inverse) then begin
     
-    if ~keyword_set(win) then win = 500
-    if ~keyword_set(overlap) then overlap = 250
+    if ~keyword_set(win) then win = 512
+    if ~keyword_set(overlap) then overlap = 256
     if ~keyword_set(center) then center = 0
     
     n = floor((n_elements(signal0) - overlap) / (win - overlap))
