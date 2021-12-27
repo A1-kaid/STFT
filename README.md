@@ -15,16 +15,16 @@ Array
 　An one-dimensional vector of original time domaim signal.  
 Timeline:  
 　The time axis corresponding to the original signal.  
-　If not spectified or 0, the converted timeline will not be output.  
+　If empty or 0, the converted timeline will not be output.  
 Window length:  
 　The length of window function, or the sampling length of STFT.  
-　If not spectified, it will be preset to 512.  
+　If empty, it will be preset to 512.  
 Window overlap:  
 　The length of overlap part between two window function.  
-　If not spectified, it will be preset to 256.  
+　If empty, it will be preset to 256.  
 Sampling:  
 　Sampling of input signal, in seconds.  
-　If not spectified, it will be automatically determination.  
+　If empty, it will be automatically determination.  
   
 Keywords:  
 Window_function:  
@@ -44,5 +44,5 @@ Inverse:
 arguments except Window overlap are no effect, and default value of  
 overlap will be 0.  
 Center:  
-　Set this keyword to center original signal befor FFT, can be  
-regarded as a special high-pass filter.
+　Set this keyword to subtract the average value from the original
+signal befor FFT, can be regarded as a special high-pass filter.
