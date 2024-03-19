@@ -6,29 +6,29 @@
 ;Short-time Fourier transform Function
 ;
 ;Syntax:
-;Result = stft(array [,window overlap] [,window lengh] [,timeline]
+;Result = stft(input [,window overlap] [,window lengh] [,input timeline]
 ;                [,sampling] [,window_function = scalar] [,timeline = variable]
-;                    [,frequency = variable] [,/cross] [,/inverse] [,/center])
+;                    [,frequency = variable] [,/two_way] [,/inverse] [,/remove_dc])
 ;
 ;Return Value:
 ;  STFT return a two-dimensional vector which is Short-time Fourier
 ;transform result of input array or return a inverse STFT of input array.
 ;
 ;Arguments:
-;Array:
+;Input:
 ;  An one-dimensional vector of original time domaim signal.
-;Timeline:
+;Input timeline:
 ;  The time axis corresponding to the original signal.
-;  If empty or 0, the converted timeline will not be output.
+;  If not spectified or 0, the converted timeline will not be output.
 ;Window length:
 ;  The length of window function, or the sampling length of STFT.
-;  If empty, it will be preset to 512.
+;  If not spectified, it will be preset to 512.
 ;Window overlap:
 ;  The length of overlap part between two window function.
-;  If empty, it will be preset to 256.
+;  If not spectified, it will be preset to 256.
 ;Sampling:
-;  Sampling of input signal, in seconds.
-;  If empty, it will be automatically determination.
+;  Sampling period of input signal.
+;  If not spectified, it will be automatically determination.
 ;
 ;Keywords:
 ;Window_function:
@@ -40,21 +40,20 @@
 ;  Return timeline of the spectrogram, in julday.
 ;Frequency:
 ;  Return frequency of the spectrogram.
-;Cross:
+;Two_way:
 ;  Set this keyword to do STFT both fellow and reverse the timeline
 ;of original data, the result will be the average of the two.
 ;Inverse:
 ;  Set this keyword to do inverse STFT, meanwhile, other keywords and
 ;arguments except Window overlap are no effect, and default value of
 ;overlap will be 0.
-;Center:
-;  Set this keyword to subtract the average value from the original
-;signal befor FFT, can be regarded as a special high-pass filter.
+;Remove_dc:
+;  Remove the DC component of the input waveform.
 ;============================================================================
 
 function stft, signal0, overlap, win, time0, sampling, $
   window_function = w_number,  timeline = time1, frequency = freq, $
-  cross = cross, inverse = inverse, center = center
+  two_way = two_way, inverse = inverse, remove_dc = remove_dc
 
   on_error, 2
   
@@ -62,13 +61,13 @@ function stft, signal0, overlap, win, time0, sampling, $
     
     if ~keyword_set(win) then win = 512
     if ~keyword_set(overlap) then overlap = 256
-    if ~keyword_set(center) then center = 0
+    if ~keyword_set(remove_dc) then remove_dc = 0
     
     n = floor((n_elements(signal0) - overlap) / (win - overlap))
     window_f = findgen(win) + 1
     signal   = signal0[ 0: (win-long(overlap))*n+overlap-1]
     spectral = complexarr(n, win, /nozero)
-    if keyword_set(cross) then spectral2 = complexarr(n, win, /nozero)
+    if keyword_set(two_way) then spectral2 = complexarr(n, win, /nozero)
 
 
     if keyword_set(w_number) then begin
@@ -86,13 +85,13 @@ function stft, signal0, overlap, win, time0, sampling, $
     
     for i = 1, n, 1 do spectral[i-1, *] = $
       fft( (signal[ (win-long(overlap))*(i-1): (win-long(overlap))*i+overlap-1] - $
-        mean(signal[ (win-long(overlap))*(i-1): (win-long(overlap))*i+overlap-1])*center)*window_f)
+        mean(signal[ (win-long(overlap))*(i-1): (win-long(overlap))*i+overlap-1])*remove_dc)*window_f)
 
-    if keyword_set(cross) then begin
+    if keyword_set(two_way) then begin
       signal = reverse( temporary( signal))
       for i = 1, n, 1 do spectral2[n-i, *] = $
         fft( (signal[ (win-long(overlap))*(i-1): (win-long(overlap))*i+overlap-1] - $
-          mean(signal[ (win-long(overlap))*(i-1): (win-long(overlap))*i+overlap-1])*center)*window_f)
+          mean(signal[ (win-long(overlap))*(i-1): (win-long(overlap))*i+overlap-1])*remove_dc)*window_f)
       spectral = ( temporary( spectral) + spectral2) / 2
     endif
 
